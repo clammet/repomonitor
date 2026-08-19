@@ -289,9 +289,15 @@ Every dependency is pinned exactly: npm packages through the lockfile, pnpm by
 checksum, the base image and GitHub Actions by digest, and the deployed image
 by digest. A self-hosted Renovate run opens a PR for each upstream release, CI
 proves it, and green minor or patch PRs merge themselves while majors wait for
-review. Trivy scans the published image weekly. See
-[docs/dependency-management.md](docs/dependency-management.md) for the full
-policy and the one-time GitHub App secret setup.
+review. Trivy scans the published image weekly.
+
+Renovate authenticates as a GitHub App; the secret setup is documented in
+`.github/workflows/renovate.yml`. Merging relies on repository settings:
+auto-merge is enabled and a branch protection rule on `main` requires the
+"Lint, test, and build" and "Build Docker image" checks, with admin
+enforcement off so direct pushes by the owner still work. If a CI job is
+renamed, update the required checks in the branch protection rule to match,
+or PRs will block forever.
 
 ## Development
 

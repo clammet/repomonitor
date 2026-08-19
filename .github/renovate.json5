@@ -11,9 +11,10 @@
   // Match the minimumReleaseAge (1440 minutes) enforced in pnpm-workspace.yaml
   // so Renovate never proposes a version pnpm would refuse to install.
   minimumReleaseAge: '1 day',
-  // Renovate merges on its own runs once all PR checks pass, so main needs no
-  // branch-protection rule and direct pushes keep working.
-  platformAutomerge: false,
+  // Use GitHub's native auto-merge: the repo has auto-merge enabled and main
+  // requires the CI checks, so PRs merge as soon as checks go green instead of
+  // waiting for the next Renovate run.
+  platformAutomerge: true,
   // Surface every upstream release as a PR without rate-limit delays.
   prHourlyLimit: 0,
   prConcurrentLimit: 10,
