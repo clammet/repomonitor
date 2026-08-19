@@ -1,5 +1,3 @@
-# Dependency installation policy. Keep allowed lifecycle scripts version-pinned and
-# review this list whenever one of these packages is upgraded.
 allowBuilds:
   "@prisma/engines@7.9.0": true
   "better-sqlite3@12.11.1": true
@@ -14,7 +12,7 @@ strictDepBuilds: true
 # their declared ranges. Keep parent selectors narrow and remove overrides once
 # upstream releases include the fixed versions.
 overrides:
-  "@prisma/dev@0.24.14>find-my-way": "9.7.0"
+  "@prisma/dev@0.24.14>find-my-way": "9.8.0"
   "@prisma/dev@0.24.14>valibot": "1.4.2"
   "brace-expansion@<=5.0.7": "5.0.8"
   "next@16.2.12>postcss": "8.5.23"
