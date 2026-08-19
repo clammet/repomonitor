@@ -293,11 +293,11 @@ review. Trivy scans the published image weekly.
 
 Renovate authenticates as a GitHub App; the secret setup is documented in
 `.github/workflows/renovate.yml`. Merging relies on repository settings:
-auto-merge is enabled and a branch protection rule on `main` requires the
-"Lint, test, and build" and "Build Docker image" checks, with admin
-enforcement off so direct pushes by the owner still work. If a CI job is
-renamed, update the required checks in the branch protection rule to match,
-or PRs will block forever.
+auto-merge is enabled and a ruleset on the default branch requires the
+"Lint, test, and build" and "Build Docker image" checks, with a bypass for
+repository admins so direct pushes by the owner still work. If a CI job is
+renamed, update the required checks in the ruleset to match, or PRs will
+block forever.
 
 ## Development
 
