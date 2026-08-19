@@ -16,7 +16,7 @@ overrides:
   "@prisma/dev@0.24.14>valibot": "1.4.2"
   "brace-expansion@<=5.0.7": "5.0.9"
   "next@16.2.12>postcss": "8.5.23"
-  "next@16.2.12>sharp": "0.35.0"
+  "next@16.2.12>sharp": "0.35.3"
 
 # Give registries and security tooling time to identify malicious releases.
 minimumReleaseAge: 1440
