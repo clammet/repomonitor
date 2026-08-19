@@ -1,0 +1,60 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    // Pins Docker images and GitHub Actions by digest, pins devDependencies,
+    // and keeps this config migrated to current syntax.
+    'config:best-practices',
+    ':dependencyDashboard',
+  ],
+  // Pin every dependency to an exact version.
+  rangeStrategy: 'pin',
+  // Match the minimumReleaseAge (1440 minutes) enforced in pnpm-workspace.yaml
+  // so Renovate never proposes a version pnpm would refuse to install.
+  minimumReleaseAge: '1 day',
+  // Renovate merges on its own runs once all PR checks pass, so main needs no
+  // branch-protection rule and direct pushes keep working.
+  platformAutomerge: false,
+  // Surface every upstream release as a PR without rate-limit delays.
+  prHourlyLimit: 0,
+  prConcurrentLimit: 10,
+  osvVulnerabilityAlerts: true,
+  // Weekly refresh of transitive dependencies in pnpm-lock.yaml.
+  lockFileMaintenance: {
+    enabled: true,
+    automerge: true,
+    schedule: ['before 6am on monday'],
+  },
+  packageRules: [
+    {
+      description: 'Automerge non-major updates once CI is green',
+      matchUpdateTypes: ['minor', 'patch', 'pin', 'pinDigest', 'digest'],
+      automerge: true,
+    },
+    {
+      description: 'Major updates wait for a human',
+      matchUpdateTypes: ['major'],
+      automerge: false,
+    },
+  ],
+  customManagers: [
+    {
+      customType: 'regex',
+      description: 'Update the pinned Renovate version in the Renovate workflow',
+      managerFilePatterns: ['/^\\.github/workflows/renovate\\.yml$/'],
+      matchStrings: ['renovate-version:\\s*(?<currentValue>\\S+)'],
+      depNameTemplate: 'renovate',
+      datasourceTemplate: 'npm',
+    },
+    {
+      // Without this, a next upgrade would stop the "next@<version>>..."
+      // override selectors in pnpm-workspace.yaml from matching, silently
+      // dropping the patched transitive versions they enforce.
+      customType: 'regex',
+      description: 'Keep pnpm-workspace.yaml override selectors for next in sync',
+      managerFilePatterns: ['/^pnpm-workspace\\.yaml$/'],
+      matchStrings: ['"next@(?<currentValue>[0-9][^">]*)>'],
+      depNameTemplate: 'next',
+      datasourceTemplate: 'npm',
+    },
+  ],
+}

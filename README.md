@@ -226,6 +226,13 @@ The Compose file mounts `/app/data` as a named volume. Prisma migrations run
 before the server starts. Set `APP_URL` to the externally reachable HTTPS URL
 and register its callback URLs with GitHub and Google.
 
+To run the published image instead of building locally, use
+`docker-compose.deploy.yml`, which pins the image by digest:
+
+```sh
+docker compose -f docker-compose.deploy.yml up -d
+```
+
 The container includes a sendmail-compatible command, but production operators
 must configure its mail transfer route or connect Gmail in the super-admin
 settings.
@@ -238,7 +245,7 @@ Build a local image for the current machine:
 pnpm docker:build
 ```
 
-This tags the image as `ghcr.io/clamapps/repomonitor:latest`. To publish it,
+This tags the image as `ghcr.io/clammet/repomonitor:latest`. To publish it,
 create a GitHub personal access token (classic) with `write:packages`, then log
 Docker in to GitHub Container Registry:
 
@@ -270,11 +277,21 @@ for token, package permission, and visibility details.
 The GitHub Actions workflow in `.github/workflows/docker.yml` builds
 `linux/amd64` images only when commits are pushed to `main`. Each successful
 build publishes `latest` and `sha-<commit>` tags to
-`ghcr.io/clamapps/repomonitor`.
+`ghcr.io/clammet/repomonitor`.
 
 Publishing uses the workflow's built-in `GITHUB_TOKEN`; no registry secret is
 required. The repository grants the job only `contents: read` and
 `packages: write` permissions.
+
+## Dependency management
+
+Every dependency is pinned exactly: npm packages through the lockfile, pnpm by
+checksum, the base image and GitHub Actions by digest, and the deployed image
+by digest. A self-hosted Renovate run opens a PR for each upstream release, CI
+proves it, and green minor or patch PRs merge themselves while majors wait for
+review. Trivy scans the published image weekly. See
+[docs/dependency-management.md](docs/dependency-management.md) for the full
+policy and the one-time GitHub App secret setup.
 
 ## Development
 

@@ -1,0 +1,41 @@
+name: Renovate
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  renovate:
+    name: Run Renovate
+    runs-on: ubuntu-latest
+    steps:
+      # Authenticates as a GitHub App (secrets RENOVATE_APP_ID and
+      # RENOVATE_APP_PRIVATE_KEY) so Renovate PRs trigger the CI workflow.
+      # The app must be installed on this repository with read/write on
+      # contents, pull requests, issues, and workflows (the last one lets
+      # Renovate bump action digests in .github/workflows). With no owner or
+      # repositories input, the token is scoped to this repository only.
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+
+      - name: Run Renovate
+        uses: renovatebot/github-action@e09d604f8f803bb527bd8321ed5be06c460b8682 # v46.2.2
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          renovate-version: 44.34.3
+        env:
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          RENOVATE_PLATFORM: github
+          LOG_LEVEL: info

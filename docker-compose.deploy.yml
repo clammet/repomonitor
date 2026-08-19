@@ -1,0 +1,21 @@
+# Runs the published image instead of building locally:
+#   docker compose -f docker-compose.deploy.yml up -d
+# The digest pins the exact image; Renovate opens a PR when a newer image is
+# published.
+#
+# NOTE: the published image still lives under the clamapps org from before the
+# repository moved to clammet. The next push to main publishes
+# ghcr.io/clammet/repomonitor; switch the image name below once that exists.
+services:
+  repomonitor:
+    image: ghcr.io/clamapps/repomonitor:latest@sha256:17ebbc22e921e1d6ee499172c29538fd4f3be3bf3cd68611ace0eab3ca8d02ea
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - repomonitor-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  repomonitor-data:

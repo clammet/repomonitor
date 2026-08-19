@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@11.17.0",
+  "packageManager": "pnpm@11.17.0+sha512.cca3cea332ad254bb84145f966d19f4879615210346fc92c79a047f23a0d7b3cca3c3792f0076ba1f1831d277efbcf0a9119b31a9a60eca7fb3d6231f331ef72",
   "engines": {
     "node": "^22.12.0 || ^24.0.0"
   },
@@ -11,8 +11,8 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "build:styledev": "node scripts/build-styledev.mjs",
-    "docker:build": "docker build --tag \"${DOCKER_IMAGE:-ghcr.io/clamapps/repomonitor}:${DOCKER_TAG:-latest}\" .",
-    "docker:publish": "docker buildx build --platform \"${DOCKER_PLATFORMS:-linux/amd64,linux/arm64}\" --tag \"${DOCKER_IMAGE:-ghcr.io/clamapps/repomonitor}:${DOCKER_TAG:-latest}\" --push .",
+    "docker:build": "docker build --tag \"${DOCKER_IMAGE:-ghcr.io/clammet/repomonitor}:${DOCKER_TAG:-latest}\" .",
+    "docker:publish": "docker buildx build --platform \"${DOCKER_PLATFORMS:-linux/amd64,linux/arm64}\" --tag \"${DOCKER_IMAGE:-ghcr.io/clammet/repomonitor}:${DOCKER_TAG:-latest}\" --push .",
     "start": "node .next/standalone/server.js",
     "postinstall": "prisma generate",
     "lint": "eslint .",
