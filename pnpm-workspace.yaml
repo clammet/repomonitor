@@ -2,7 +2,7 @@ allowBuilds:
   "@prisma/engines@7.9.0": true
   "better-sqlite3@12.11.1": true
   "prisma@7.9.0": true
-  "sharp@0.35.0": true
+  "sharp@0.35.3": true
   "unrs-resolver@1.12.2": true
 
 # Fail installs if a new dependency introduces an unreviewed lifecycle script.

@@ -36,6 +36,22 @@
       matchUpdateTypes: ['major'],
       automerge: false,
     },
+    {
+      description: '0.x minors are breaking by semver convention - hold them for a human',
+      matchCurrentVersion: '<1.0.0',
+      matchUpdateTypes: ['minor'],
+      automerge: false,
+    },
+    {
+      description: 'Pins and digest refreshes point at code that already shipped - no soak needed',
+      matchUpdateTypes: ['pin', 'pinDigest', 'digest'],
+      minimumReleaseAge: null,
+    },
+    {
+      description: 'engines.node declares the supported range, not a deployment pin; a rangeStrategy=pin rewrite here broke the range once already',
+      matchDepTypes: ['engines'],
+      enabled: false,
+    },
   ],
   customManagers: [
     {
@@ -44,6 +60,18 @@
       managerFilePatterns: ['/^\\.github/workflows/renovate\\.yml$/'],
       matchStrings: ['renovate-version:\\s*(?<currentValue>\\S+)'],
       depNameTemplate: 'renovate',
+      datasourceTemplate: 'npm',
+    },
+    {
+      // Without this, a dependency bump desyncs the exact-version keys under
+      // allowBuilds and pnpm fails the install with ERR_PNPM_IGNORED_BUILDS
+      // (this is what blocked the prisma 7.9.1 patch PR). The manager keeps
+      // each "name@version": true key in step with the package bump, and the
+      // usual monorepo grouping lands both edits in the same PR.
+      customType: 'regex',
+      description: 'Keep pnpm-workspace.yaml allowBuilds version pins in sync',
+      managerFilePatterns: ['/^pnpm-workspace\\.yaml$/'],
+      matchStrings: ['"(?<depName>@?[^"@]+)@(?<currentValue>[^">]+)":\\s*true'],
       datasourceTemplate: 'npm',
     },
     {

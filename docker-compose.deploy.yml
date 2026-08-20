@@ -3,12 +3,9 @@
 # The digest pins the exact image; Renovate opens a PR when a newer image is
 # published.
 #
-# NOTE: the published image still lives under the clamapps org from before the
-# repository moved to clammet. The next push to main publishes
-# ghcr.io/clammet/repomonitor; switch the image name below once that exists.
 services:
   repomonitor:
-    image: ghcr.io/clamapps/repomonitor:latest@sha256:17ebbc22e921e1d6ee499172c29538fd4f3be3bf3cd68611ace0eab3ca8d02ea
+    image: ghcr.io/clammet/repomonitor:latest@sha256:d403d3900f09cd0c87393af62f12fb6d133c6f6be1e0353bf8aa41e04749bcb2
     ports:
       - "3000:3000"
     env_file:
