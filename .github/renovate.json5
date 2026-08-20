@@ -5,12 +5,13 @@
     // and keeps this config migrated to current syntax.
     'config:best-practices',
     ':dependencyDashboard',
+    'customManagers:githubActionsVersions',
   ],
   // Pin every dependency to an exact version.
   rangeStrategy: 'pin',
-  // Match the minimumReleaseAge (1440 minutes) enforced in pnpm-workspace.yaml
-  // so Renovate never proposes a version pnpm would refuse to install.
-  minimumReleaseAge: '1 day',
+  // Fleet-standard soak. pnpm-workspace.yaml enforces its own one-day floor at
+  // resolution time; three days stays above it.
+  minimumReleaseAge: '3 days',
   // Use GitHub's native auto-merge: the repo has auto-merge enabled and main
   // requires the CI checks, so PRs merge as soon as checks go green instead of
   // waiting for the next Renovate run.
@@ -57,16 +58,14 @@
       matchDepNames: ['node'],
       groupName: 'node runtime',
     },
+    {
+      description: 'Renovate engine: several releases a day, so take the weekly one; no digest pin because the annotated RENOVATE_VERSION env var holds a plain tag',
+      matchDepNames: ['ghcr.io/renovatebot/renovate'],
+      schedule: ['before 6am on monday'],
+      pinDigests: false,
+    },
   ],
   customManagers: [
-    {
-      customType: 'regex',
-      description: 'Update the pinned Renovate version in the Renovate workflow',
-      managerFilePatterns: ['/^\\.github/workflows/renovate\\.yml$/'],
-      matchStrings: ['renovate-version:\\s*(?<currentValue>\\S+)'],
-      depNameTemplate: 'renovate',
-      datasourceTemplate: 'npm',
-    },
     {
       // Without this, a dependency bump desyncs the exact-version keys under
       // allowBuilds and pnpm fails the install with ERR_PNPM_IGNORED_BUILDS

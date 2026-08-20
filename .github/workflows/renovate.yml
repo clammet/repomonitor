@@ -13,6 +13,14 @@ permissions:
   actions: write
   contents: read
 
+env:
+  # Exact Renovate engine pin; the action's own default is the floating `44`
+  # tag. Renovate bumps it weekly through the customManagers:githubActionsVersions
+  # preset in the repo's Renovate config (the annotation must stay on the line
+  # directly above the variable).
+  # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate
+  RENOVATE_VERSION: 44.35.4
+
 jobs:
   renovate:
     name: Run Renovate
@@ -32,8 +40,8 @@ jobs:
               gh api -X PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/${id}/enable"
             done
 
-      # Authenticates as a GitHub App (secrets RENOVATE_APP_ID and
-      # RENOVATE_APP_PRIVATE_KEY) so Renovate PRs trigger the CI workflow.
+      # Authenticates as a GitHub App (variable RENOVATE_APP_CLIENT_ID and
+      # secret RENOVATE_APP_PRIVATE_KEY) so Renovate PRs trigger the CI workflow.
       # The app must be installed on this repository with read/write on
       # contents, pull requests, issues, and workflows (the last one lets
       # Renovate bump action digests in .github/workflows). With no owner or
@@ -42,14 +50,14 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          client-id: ${{ vars.RENOVATE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
 
       - name: Run Renovate
         uses: renovatebot/github-action@e09d604f8f803bb527bd8321ed5be06c460b8682 # v46.2.2
         with:
           token: ${{ steps.app-token.outputs.token }}
-          renovate-version: 44.34.3
+          renovate-version: ${{ env.RENOVATE_VERSION }}
         env:
           RENOVATE_REPOSITORIES: ${{ github.repository }}
           RENOVATE_PLATFORM: github
