@@ -5,7 +5,7 @@
 #
 services:
   repomonitor:
-    image: ghcr.io/clammet/repomonitor:latest@sha256:9ab2c6b58ef62e3197d3a43fea9f19389d2ee33f4910f934fe7d1d886bfbddde
+    image: ghcr.io/clammet/repomonitor:latest@sha256:69db30fd0be3cad38912c2162c7f959c594866262e8f73c29f21b4764525e0e4
     ports:
       - "3000:3000"
     env_file:
