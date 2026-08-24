@@ -12,7 +12,7 @@ strictDepBuilds: true
 # their declared ranges. Keep parent selectors narrow and remove overrides once
 # upstream releases include the fixed versions.
 overrides:
-  "@prisma/dev@0.24.14>find-my-way": "9.8.0"
+  "@prisma/dev@0.24.14>find-my-way": "9.9.0"
   "@prisma/dev@0.24.14>valibot": "1.4.2"
   "brace-expansion@<=5.0.7": "5.0.9"
   "next@16.3.2>postcss": "8.5.26"
