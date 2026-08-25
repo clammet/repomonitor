@@ -1,4 +1,4 @@
-FROM node:22.23.2-bookworm-slim@sha256:e9bff3a454208b46a1f96da92878cc7f56a2a41ceac2216825be3177736896b5 AS base
+FROM node:22.23.2-bookworm-slim@sha256:83f487e0a63425e5b4d146fb5e5be574bcbe1b7b843d3ebafdd95eaf7767a7e5 AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN apt-get update \
