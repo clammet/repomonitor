@@ -49,8 +49,8 @@ importers:
         specifier: 0.0.1
         version: 0.0.1
       zod:
-        specifier: 4.5.1
-        version: 4.5.1
+        specifier: 4.5.2
+        version: 4.5.2
     devDependencies:
       '@types/better-sqlite3':
         specifier: 7.6.13
@@ -2834,8 +2834,8 @@ packages:
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
-  zod@4.5.1:
-    resolution: {integrity: sha512-P3GqeAEOEDqKvafVGLezbg+39YW/ze4xrD4qdS0adOY8eoI3zfjv1PQM4UwQzgT8mZKXEbqtVt8K+ZKGqkMFKg==}
+  zod@4.5.2:
+    resolution: {integrity: sha512-XkYXCol10+ba/6F/cueWV+TezUeOqXW0hdeJt5CdXjTYeAgAQg5N03RQdJ80mhfFE72+pblvYMW4wy2Qp4Qbrg==}
 
 snapshots:
 
@@ -4373,8 +4373,8 @@ snapshots:
       '@babel/parser': 7.29.8
       eslint: 9.39.5(jiti@2.7.0)(supports-color@7.2.0)
       hermes-parser: 0.25.1
-      zod: 4.5.1
-      zod-validation-error: 4.0.2(zod@4.5.1)
+      zod: 4.5.2
+      zod-validation-error: 4.0.2(zod@4.5.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -5787,8 +5787,8 @@ snapshots:
       grammex: 3.1.13
       graphmatch: 1.1.1
 
-  zod-validation-error@4.0.2(zod@4.5.1):
+  zod-validation-error@4.0.2(zod@4.5.2):
     dependencies:
-      zod: 4.5.1
+      zod: 4.5.2
 
-  zod@4.5.1: {}
+  zod@4.5.2: {}
