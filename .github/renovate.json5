@@ -25,17 +25,24 @@
     enabled: true,
     automerge: true,
     schedule: ['before 6am on monday'],
+    // Rebase onto main before merge so CI ran against the current base.
+    rebaseWhen: 'behind-base-branch',
   },
+  // Explicit so the soak policy is visible in one place (:dependencyDashboard
+  // above already turns it on).
+  dependencyDashboard: true,
   packageRules: [
     {
-      description: 'Automerge non-major updates once CI is green',
+      description: 'Automerge non-major updates once CI is green; rebase onto main first so CI ran against the current base',
       matchUpdateTypes: ['minor', 'patch', 'pin', 'pinDigest', 'digest'],
       automerge: true,
+      rebaseWhen: 'behind-base-branch',
     },
     {
-      description: 'Major updates wait for a human',
+      description: 'Major updates wait for a human and soak a week',
       matchUpdateTypes: ['major'],
       automerge: false,
+      minimumReleaseAge: '7 days',
     },
     {
       description: '0.x minors are breaking by semver convention - hold them for a human',
@@ -44,9 +51,13 @@
       automerge: false,
     },
     {
-      description: 'Pins and digest refreshes point at code that already shipped - no soak needed',
-      matchUpdateTypes: ['pin', 'pinDigest', 'digest'],
-      minimumReleaseAge: null,
+      // Supply-chain soak: never automerge a GitHub Actions digest change. A
+      // moved tag on a SHA-pinned action shows up as a digest update; a human
+      // compares it against the upstream release first.
+      description: 'Never automerge GitHub Actions digest changes',
+      matchManagers: ['github-actions'],
+      matchUpdateTypes: ['digest', 'pinDigest'],
+      automerge: false,
     },
     {
       description: 'engines.node declares the supported range, not a deployment pin; a rangeStrategy=pin rewrite here broke the range once already',
