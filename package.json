@@ -26,8 +26,8 @@
     "google:risc:configure": "node scripts/configure-google-risc.mjs"
   },
   "dependencies": {
-    "@prisma/adapter-better-sqlite3": "7.9.1",
-    "@prisma/client": "7.9.1",
+    "@prisma/adapter-better-sqlite3": "7.10.0",
+    "@prisma/client": "7.10.0",
     "dotenv": "17.4.2",
     "jose": "6.2.10",
     "next": "16.3.4",
