@@ -1,0 +1,20 @@
+{
+  "workflow": "image-scan.yml",
+  "images": [
+    {
+      "ref": "ghcr.io/clammet/repomonitor:latest",
+      "scope": "published image",
+      "sarif": true,
+      "category": "image-cve-scan"
+    }
+  ],
+  "build_workflow": "docker.yml",
+  "filesystem": true,
+  "ci_workflow": "ci.yml",
+  "retry_workflows": [
+    "renovate.yml",
+    "image-scan.yml",
+    "ci.yml",
+    "docker.yml"
+  ]
+}
