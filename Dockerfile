@@ -9,6 +9,10 @@ RUN apt-get update \
 WORKDIR /app
 
 FROM base AS deps
+# Native dependencies can fall back to node-gyp when prebuilds are unavailable.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml ./
 COPY patches ./patches
 COPY prisma/schema.prisma ./prisma/schema.prisma
