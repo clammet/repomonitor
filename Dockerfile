@@ -32,9 +32,11 @@ ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 LABEL org.opencontainers.image.source="https://github.com/clammet/repomonitor"
 WORKDIR /app
+# Outbound mail does not need the package-generated, shared TLS server identity.
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends sendmail-bin \
+  && rm -f /etc/mail/tls/sendmail-common.key /etc/mail/tls/sendmail-common.crt \
   && rm -rf /var/lib/apt/lists/* \
   && groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs nextjs \
