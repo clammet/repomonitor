@@ -1,104 +1,139 @@
 {
-  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: [
-    // Pins Docker images and GitHub Actions by digest, pins devDependencies,
-    // and keeps this config migrated to current syntax.
-    'config:best-practices',
-    ':dependencyDashboard',
-    'customManagers:githubActionsVersions',
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    ":dependencyDashboard",
+    "customManagers:githubActionsVersions"
   ],
-  // Pin every dependency to an exact version.
-  rangeStrategy: 'pin',
-  // Fleet-standard soak. pnpm-workspace.yaml enforces its own one-day floor at
-  // resolution time; three days stays above it.
-  minimumReleaseAge: '3 days',
-  // Use GitHub's native auto-merge: the repo has auto-merge enabled and main
-  // requires the CI checks, so PRs merge as soon as checks go green instead of
-  // waiting for the next Renovate run.
-  platformAutomerge: true,
-  // Surface every upstream release as a PR without rate-limit delays.
-  prHourlyLimit: 0,
-  prConcurrentLimit: 10,
-  osvVulnerabilityAlerts: true,
-  // Weekly refresh of transitive dependencies in pnpm-lock.yaml.
-  lockFileMaintenance: {
-    enabled: true,
-    automerge: true,
-    schedule: ['before 6am on monday'],
-    // Rebase onto main before merge so CI ran against the current base.
-    rebaseWhen: 'behind-base-branch',
+  "rangeStrategy": "pin",
+  "minimumReleaseAge": "3 days",
+  "platformAutomerge": false,
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 10,
+  "osvVulnerabilityAlerts": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": [
+      "before 6am on monday"
+    ],
+    "rebaseWhen": "behind-base-branch"
   },
-  // Explicit so the soak policy is visible in one place (:dependencyDashboard
-  // above already turns it on).
-  dependencyDashboard: true,
-  packageRules: [
+  "dependencyDashboard": true,
+  "packageRules": [
     {
-      description: 'Automerge non-major updates once CI is green; rebase onto main first so CI ran against the current base',
-      matchUpdateTypes: ['minor', 'patch', 'pin', 'pinDigest', 'digest'],
-      automerge: true,
-      rebaseWhen: 'behind-base-branch',
+      "description": "Automerge non-major updates once CI is green; rebase onto main first so CI ran against the current base",
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "pinDigest",
+        "digest"
+      ],
+      "automerge": true,
+      "rebaseWhen": "behind-base-branch"
     },
     {
-      description: 'Major updates wait for a human and soak a week',
-      matchUpdateTypes: ['major'],
-      automerge: false,
-      minimumReleaseAge: '7 days',
+      "description": "Attempt major updates automatically after a week; CI must pass before merge",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": true,
+      "minimumReleaseAge": "7 days",
+      "dependencyDashboardApproval": false
     },
     {
-      description: '0.x minors are breaking by semver convention - hold them for a human',
-      matchCurrentVersion: '<1.0.0',
-      matchUpdateTypes: ['minor'],
-      automerge: false,
+      "description": "Pre-1.0 updates use the same required CI gate",
+      "matchCurrentVersion": "<1.0.0",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "automerge": true
     },
     {
-      // Supply-chain soak: never automerge a GitHub Actions digest change. A
-      // moved tag on a SHA-pinned action shows up as a digest update; a human
-      // compares it against the upstream release first.
-      description: 'Never automerge GitHub Actions digest changes',
-      matchManagers: ['github-actions'],
-      matchUpdateTypes: ['digest', 'pinDigest'],
-      automerge: false,
+      "description": "Never automerge GitHub Actions digest changes",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "digest",
+        "pinDigest"
+      ],
+      "automerge": false
     },
     {
-      description: 'engines.node declares the supported range, not a deployment pin; a rangeStrategy=pin rewrite here broke the range once already',
-      matchDepTypes: ['engines'],
-      enabled: false,
+      "description": "engines.node declares the supported range, not a deployment pin; a rangeStrategy=pin rewrite here broke the range once already",
+      "matchDepTypes": [
+        "engines"
+      ],
+      "enabled": false
     },
     {
-      description: 'One PR for the Node runtime: .nvmrc (what CI tests) and the Dockerfile base image (what ships) must move together',
-      matchDepNames: ['node'],
-      groupName: 'node runtime',
+      "description": "One PR for the Node runtime: .nvmrc (what CI tests) and the Dockerfile base image (what ships) must move together",
+      "matchDepNames": [
+        "node"
+      ],
+      "groupName": "node runtime"
     },
     {
-      description: 'Renovate engine: several releases a day, so take the weekly one; no digest pin because the annotated RENOVATE_VERSION env var holds a plain tag',
-      matchDepNames: ['ghcr.io/renovatebot/renovate'],
-      schedule: ['before 6am on monday'],
-      pinDigests: false,
+      "description": "Renovate engine: several releases a day, so take the weekly one; no digest pin because the annotated RENOVATE_VERSION env var holds a plain tag",
+      "matchDepNames": [
+        "ghcr.io/renovatebot/renovate"
+      ],
+      "schedule": [
+        "before 6am on monday"
+      ],
+      "pinDigests": false
     },
+    {
+      "description": "Keep Node image, CI runtime, and Node types in one tested PR",
+      "matchPackageNames": [
+        "node",
+        "@types/node"
+      ],
+      "groupName": "Node runtime"
+    },
+    {
+      "description": "Prisma generator, client, adapters, and approved engine scripts must update atomically across npm and regex managers",
+      "matchPackageNames": [
+        "prisma",
+        "@prisma/**"
+      ],
+      "groupName": "Prisma",
+      "groupSlug": "prisma",
+      "separateMajorMinor": false
+    }
   ],
-  customManagers: [
+  "customManagers": [
     {
-      // Without this, a dependency bump desyncs the exact-version keys under
-      // allowBuilds and pnpm fails the install with ERR_PNPM_IGNORED_BUILDS
-      // (this is what blocked the prisma 7.9.1 patch PR). The manager keeps
-      // each "name@version": true key in step with the package bump, and the
-      // usual monorepo grouping lands both edits in the same PR.
-      customType: 'regex',
-      description: 'Keep pnpm-workspace.yaml allowBuilds version pins in sync',
-      managerFilePatterns: ['/^pnpm-workspace\\.yaml$/'],
-      matchStrings: ['"(?<depName>@?[^"@]+)@(?<currentValue>[^">]+)":\\s*true'],
-      datasourceTemplate: 'npm',
+      "customType": "regex",
+      "description": "Keep pnpm-workspace.yaml allowBuilds version pins in sync",
+      "managerFilePatterns": [
+        "/^pnpm-workspace\\.yaml$/"
+      ],
+      "matchStrings": [
+        "\"(?<depName>@?[^\"@]+)@(?<currentValue>[^\">]+)\":\\s*true"
+      ],
+      "datasourceTemplate": "npm"
     },
     {
-      // Without this, a next upgrade would stop the "next@<version>>..."
-      // override selectors in pnpm-workspace.yaml from matching, silently
-      // dropping the patched transitive versions they enforce.
-      customType: 'regex',
-      description: 'Keep pnpm-workspace.yaml override selectors for next in sync',
-      managerFilePatterns: ['/^pnpm-workspace\\.yaml$/'],
-      matchStrings: ['"next@(?<currentValue>[0-9][^">]*)>'],
-      depNameTemplate: 'next',
-      datasourceTemplate: 'npm',
-    },
+      "customType": "regex",
+      "description": "Keep pnpm-workspace.yaml override selectors for next in sync",
+      "managerFilePatterns": [
+        "/^pnpm-workspace\\.yaml$/"
+      ],
+      "matchStrings": [
+        "\"next@(?<currentValue>[0-9][^\">]*)>"
+      ],
+      "depNameTemplate": "next",
+      "datasourceTemplate": "npm"
+    }
   ],
+  "timezone": "Australia/Melbourne",
+  "rebaseWhen": "behind-base-branch",
+  "description": "Renovate owns dependency updates. Tested updates merge after the release soak; unresolved maintenance is reported by the maintenance workflows. See .github/MAINTENANCE.md.",
+  "automergeType": "pr",
+  "vulnerabilityAlerts": {
+    "automerge": true
+  }
 }
