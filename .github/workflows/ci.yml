@@ -33,6 +33,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Validate Prisma configuration and deploy migrations
+        run: |
+          smoke_dir=$(mktemp -d)
+          trap 'rm -rf "$smoke_dir"' EXIT
+          export DATABASE_URL="file:$smoke_dir/migrations.db"
+          python3 -c 'import os, sqlite3; sqlite3.connect(os.environ["DATABASE_URL"][5:]).close()'
+          pnpm exec prisma validate
+          pnpm exec prisma migrate deploy
+          # A normal restart must be safe after all migrations have run.
+          pnpm exec prisma migrate deploy
+
       - name: Lint
         run: pnpm lint
 

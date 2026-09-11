@@ -12,6 +12,9 @@ strictDepBuilds: true
 # their declared ranges. Keep parent selectors narrow and remove overrides once
 # upstream releases include the fixed versions.
 overrides:
+  # Security fixes pending adoption by Prisma; config/migrations are smoke-tested.
+  "@prisma/config@7.9.1>deepmerge-ts": "8.0.0"
+  "prisma@7.9.1>mysql2": "3.23.1"
   "@prisma/dev@0.24.14>find-my-way": "9.9.0"
   "@prisma/dev@0.24.14>valibot": "1.4.2"
   "brace-expansion@<=5.0.7": "5.0.9"

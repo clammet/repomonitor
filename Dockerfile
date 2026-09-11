@@ -27,6 +27,10 @@ FROM build AS production-deps
 RUN pnpm prune --prod --config.confirmModulesPurge=false
 
 FROM base AS runner
+# Package managers are build tools; this runtime starts Node directly.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-v* \
+  && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+    /usr/local/bin/pnpm /usr/local/bin/pnpx /usr/local/bin/yarn /usr/local/bin/yarnpkg
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
