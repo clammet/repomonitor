@@ -13,7 +13,7 @@ strictDepBuilds: true
 # upstream releases include the fixed versions.
 overrides:
   # Security fixes pending adoption by Prisma; config/migrations are smoke-tested.
-  "@prisma/config@7.9.1>deepmerge-ts": "8.0.0"
+  "@prisma/config@7.9.1>deepmerge-ts": "8.0.2"
   "prisma@7.9.1>mysql2": "3.23.1"
   "@prisma/dev@0.24.14>find-my-way": "9.9.0"
   "@prisma/dev@0.24.14>valibot": "1.4.2"
