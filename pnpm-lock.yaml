@@ -166,7 +166,7 @@ overrides:
   '@prisma/config@7.9.1>deepmerge-ts': 8.0.2
   prisma@7.9.1>mysql2: 3.24.4
   '@prisma/dev@0.24.14>find-my-way': 9.9.0
-  '@prisma/dev@0.24.14>valibot': 1.4.2
+  '@prisma/dev@0.24.14>valibot': 1.5.0
   brace-expansion@<=5.0.7: 5.0.9
   next@16.3.4>postcss: 8.5.28
   next@16.3.4>sharp: 0.35.4
