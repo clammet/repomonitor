@@ -1,28 +1,19 @@
-import { ConditionType, EventType } from "@prisma/client";
 import { ZodError } from "zod";
 
 import { requireRouteUser } from "@/lib/auth/session";
 import { assertSameOrigin, redirectWithMessage, routeHandler } from "@/lib/http";
-import { addCondition } from "@/lib/subscriptions";
+import { updateCondition } from "@/lib/subscriptions";
 
-type Context = { params: Promise<{ id: string }> };
+type Context = { params: Promise<{ id: string; conditionId: string }> };
 
 export const POST = routeHandler(async (request: Request, context: Context) => {
   assertSameOrigin(request);
   const user = await requireRouteUser();
-  const { id } = await context.params;
+  const { id, conditionId } = await context.params;
   const form = await request.formData();
 
   try {
-    const eventType = String(form.get("eventType")) as EventType;
-    const conditionType = String(form.get("conditionType")) as ConditionType;
-    if (!Object.values(EventType).includes(eventType)) {
-      throw new Error("Invalid event type");
-    }
-    if (!Object.values(ConditionType).includes(conditionType)) {
-      throw new Error("Invalid condition type");
-    }
-    await addCondition(user.id, id, eventType, conditionType, {
+    await updateCondition(user.id, id, conditionId, {
       note: String(form.get("note") ?? ""),
       textPattern: String(form.get("textPattern") ?? ""),
       filePath: String(form.get("filePath") ?? ""),
@@ -35,7 +26,7 @@ export const POST = routeHandler(async (request: Request, context: Context) => {
       request,
       `/subscriptions/${id}`,
       "notice",
-      "Condition added",
+      "Condition updated",
     );
   } catch (error) {
     const message =
@@ -43,12 +34,7 @@ export const POST = routeHandler(async (request: Request, context: Context) => {
         ? (error.issues[0]?.message ?? "Invalid condition")
         : error instanceof Error
           ? error.message
-          : "Unable to add condition";
-    return redirectWithMessage(
-      request,
-      `/subscriptions/${id}`,
-      "error",
-      message,
-    );
+          : "Unable to update condition";
+    return redirectWithMessage(request, `/subscriptions/${id}`, "error", message);
   }
 });

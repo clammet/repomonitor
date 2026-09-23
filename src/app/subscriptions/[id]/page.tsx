@@ -6,6 +6,8 @@ import { EventBadge } from "@/app/_components/event-badge";
 import { Flash } from "@/app/_components/flash";
 import { Header } from "@/app/_components/header";
 import { AddConditionMenu } from "@/app/subscriptions/[id]/_components/add-condition-menu";
+import { EditConditionDialog } from "@/app/subscriptions/[id]/_components/edit-condition-dialog";
+import { TextConditionForm } from "@/app/subscriptions/[id]/_components/text-condition-form";
 import { LineConditionForm } from "@/app/subscriptions/[id]/_components/line-condition-form";
 import { LocalSentAt } from "@/app/subscriptions/[id]/_components/local-sent-at";
 import { requireUser } from "@/lib/auth/session";
@@ -174,30 +176,10 @@ export default async function SubscriptionPage({
                 </p>
               </div>
               <AddConditionMenu menuId={`condition-menu-${event.id}`}>
-                <form
+                <TextConditionForm
                   action={`/api/subscriptions/${id}/conditions`}
-                  method="post"
-                >
-                  <input type="hidden" name="eventType" value={event.type} />
-                  <input
-                    type="hidden"
-                    name="conditionType"
-                    value={ConditionType.TEXT_CONTAINS}
-                  />
-                  <strong>Text contains</strong>
-                  <p>Search messages, release notes, paths, and available diffs.</p>
-                  <label>
-                    Text to match
-                    <input
-                      name="textPattern"
-                      placeholder="breaking change"
-                      required
-                    />
-                  </label>
-                  <button className="button button-primary button-small">
-                    Add text condition
-                  </button>
-                </form>
+                  eventType={event.type}
+                />
                 <div className="menu-rule" />
                 <LineConditionForm
                   action={`/api/subscriptions/${id}/conditions`}
@@ -239,6 +221,9 @@ export default async function SubscriptionPage({
                           </span>
                         </>
                       )}
+                      {condition.note ? (
+                        <p className="condition-note">Note: {condition.note}</p>
+                      ) : null}
                     </div>
                     <div className="condition-activity">
                       {condition.notifications[0] ? (
@@ -261,19 +246,45 @@ export default async function SubscriptionPage({
                         <span>No matches yet</span>
                       )}
                     </div>
-                    <form
-                      action={`/api/subscriptions/${id}/conditions/${condition.id}/delete`}
-                      method="post"
-                    >
-                      <button
-                        className="icon-button"
-                        type="submit"
-                        aria-label="Remove condition"
-                        title="Remove condition"
+                    <div className="condition-actions">
+                      <EditConditionDialog>
+                        {condition.type === ConditionType.TEXT_CONTAINS ? (
+                          <TextConditionForm
+                            action={`/api/subscriptions/${id}/conditions/${condition.id}`}
+                            eventType={event.type}
+                            initialValues={{ textPattern: condition.textPattern, note: condition.note }}
+                          />
+                        ) : (
+                          <LineConditionForm
+                            action={`/api/subscriptions/${id}/conditions/${condition.id}`}
+                            eventType={event.type}
+                            repositoryOwner={subscription.repository.owner}
+                            repositoryName={subscription.repository.name}
+                            initialValues={{
+                              filePath: condition.filePath,
+                              lineNumber: condition.lineNumber,
+                              note: condition.note,
+                              notifyOnRemoved: condition.notifyOnRemoved,
+                              notifyOnMoved: condition.notifyOnMoved,
+                              notifyOnChanged: condition.notifyOnChanged,
+                            }}
+                          />
+                        )}
+                      </EditConditionDialog>
+                      <form
+                        action={`/api/subscriptions/${id}/conditions/${condition.id}/delete`}
+                        method="post"
                       >
-                        ×
-                      </button>
-                    </form>
+                        <button
+                          className="icon-button"
+                          type="submit"
+                          aria-label="Remove condition"
+                          title="Remove condition"
+                        >
+                          ×
+                        </button>
+                      </form>
+                    </div>
                   </article>
                 ))}
               </div>

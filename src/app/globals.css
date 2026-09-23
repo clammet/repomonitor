@@ -40,7 +40,8 @@ body {
 }
 
 button,
-input {
+input,
+textarea {
   font: inherit;
 }
 
@@ -126,6 +127,7 @@ p {
 .icon-button:focus-visible,
 .link-button:focus-visible,
 input:focus-visible,
+textarea:focus-visible,
 summary:focus-visible,
 a:focus-visible {
   outline: 3px solid rgba(49, 87, 255, 0.4);
@@ -810,7 +812,8 @@ legend {
   font-weight: 700;
 }
 
-input {
+input,
+textarea {
   width: 100%;
   min-height: 43px;
   border: 1px solid var(--line-dark);
@@ -823,6 +826,22 @@ input {
 
 input::placeholder {
   color: #9a9d93;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.condition-note-field {
+  display: block;
+  margin-top: 12px;
+}
+
+.condition-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 label > small {
@@ -1043,7 +1062,8 @@ label > small {
   font-size: 11px;
 }
 
-.condition-menu form > .button {
+.condition-menu form > .button,
+.condition-dialog form > .button {
   margin-top: 12px;
 }
 
@@ -1105,13 +1125,43 @@ label > small {
   display: grid;
   min-height: 104px;
   align-items: center;
-  grid-template-columns: 38px 44px minmax(220px, 1fr) minmax(150px, 0.7fr) 34px;
+  grid-template-columns: 38px 44px minmax(220px, 1fr) minmax(150px, 0.7fr) auto;
   gap: 15px;
   padding: 17px 20px;
 }
 
 .condition-row + .condition-row {
   border-top: 1px solid var(--line);
+}
+
+.condition-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.condition-dialog {
+  width: min(520px, calc(100vw - 26px));
+  max-height: calc(100dvh - 26px);
+  overflow-y: auto;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 24px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.condition-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.condition-dialog p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.condition-dialog > .button {
+  margin-top: 12px;
 }
 
 .condition-index {
@@ -1715,7 +1765,11 @@ label > small {
   }
 
   .condition-row {
-    grid-template-columns: 30px 40px 1fr 30px;
+    grid-template-columns: 30px 40px minmax(0, 1fr) auto;
+  }
+
+  .condition-actions {
+    flex-direction: column;
   }
 
   .condition-activity {

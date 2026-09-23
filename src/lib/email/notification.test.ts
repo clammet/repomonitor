@@ -106,6 +106,30 @@ describe("notification match context", () => {
 });
 
 describe("repository notification email", () => {
+  it("includes each condition's note and escapes user content in HTML", () => {
+    const note = 'Check <script>alert("note")</script> & retry\nThen remove the workaround.';
+    const email = buildRepositoryNotificationEmail({
+      to: "user@example.com",
+      repositoryFullName: "octo/repo",
+      settingsUrl: "https://example.com/settings",
+      notifications: [
+        storedNotification({ condition: { type: "TEXT_CONTAINS", note } }),
+        storedNotification({
+          condition: { type: "LINE_CHANGE", note: "Review the fallback" },
+          summary: "Tracked line changed",
+        }),
+        storedNotification(),
+      ],
+    });
+
+    expect(email.text).toContain(`Your note: ${note}`);
+    expect(email.text).toContain("Your note: Review the fallback");
+    expect(email.html).toContain("&lt;script&gt;alert(&quot;note&quot;)&lt;/script&gt; &amp; retry\nThen remove the workaround.");
+    expect(email.html).not.toContain("<script>");
+    expect(email.html?.match(/Your note:/g)).toHaveLength(2);
+    expect(email.text.match(/Your note:/g)).toHaveLength(2);
+  });
+
   it("collates commit and release triggers with canonical subject labels", () => {
     const commit = storedNotification();
     const release = storedNotification({

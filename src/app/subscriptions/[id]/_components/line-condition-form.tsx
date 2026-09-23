@@ -1,15 +1,24 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { parseGitHubPermalink } from "@/lib/domain/github-permalink";
+import { ConditionNoteField } from "./condition-note-field";
 
 type LineConditionFormProps = {
   action: string;
   eventType: string;
   repositoryOwner: string;
   repositoryName: string;
+  initialValues?: {
+    filePath: string | null;
+    lineNumber: number | null;
+    note: string | null;
+    notifyOnRemoved: boolean;
+    notifyOnMoved: boolean;
+    notifyOnChanged: boolean;
+  };
 };
 
 export function LineConditionForm({
@@ -17,10 +26,13 @@ export function LineConditionForm({
   eventType,
   repositoryOwner,
   repositoryName,
+  initialValues,
 }: LineConditionFormProps) {
-  const locationErrorId = `line-location-error-${eventType.toLowerCase()}`;
-  const [filePath, setFilePath] = useState("");
-  const [lineNumber, setLineNumber] = useState("");
+  const locationErrorId = useId();
+  const [filePath, setFilePath] = useState(initialValues?.filePath ?? "");
+  const [lineNumber, setLineNumber] = useState(
+    String(initialValues?.lineNumber ?? ""),
+  );
   const [locationError, setLocationError] = useState("");
   const [triggerError, setTriggerError] = useState("");
 
@@ -72,6 +84,12 @@ export function LineConditionForm({
       <input type="hidden" name="conditionType" value="LINE_CHANGE" />
       <strong>Specific line changes</strong>
       <p>Paste a GitHub permalink, or enter a file and line manually.</p>
+      {initialValues ? (
+        <p>
+          Changing the file or line captures a new baseline. Editing the note or
+          alert options keeps the current tracking.
+        </p>
+      ) : null}
       <div className="split-fields">
         <label>
           File path or permalink
@@ -106,15 +124,27 @@ export function LineConditionForm({
       <fieldset className="line-triggers">
         <legend>Notify me if the captured line is</legend>
         <label>
-          <input type="checkbox" name="notifyOnRemoved" defaultChecked />
+          <input
+            type="checkbox"
+            name="notifyOnRemoved"
+            defaultChecked={initialValues?.notifyOnRemoved ?? true}
+          />
           Removed/readded
         </label>
         <label>
-          <input type="checkbox" name="notifyOnMoved" defaultChecked />
+          <input
+            type="checkbox"
+            name="notifyOnMoved"
+            defaultChecked={initialValues?.notifyOnMoved ?? true}
+          />
           Moved
         </label>
         <label>
-          <input type="checkbox" name="notifyOnChanged" defaultChecked />
+          <input
+            type="checkbox"
+            name="notifyOnChanged"
+            defaultChecked={initialValues?.notifyOnChanged ?? true}
+          />
           Changed
         </label>
       </fieldset>
@@ -123,8 +153,9 @@ export function LineConditionForm({
           {triggerError}
         </small>
       ) : null}
+      <ConditionNoteField note={initialValues?.note} />
       <button className="button button-primary button-small" type="submit">
-        Capture line
+        {initialValues ? "Save changes" : "Capture line"}
       </button>
     </form>
   );

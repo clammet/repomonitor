@@ -1,6 +1,12 @@
 import "server-only";
 
-import { ConditionType, EventType, LineMatchState } from "@prisma/client";
+import {
+  ConditionType,
+  EventType,
+  LineMatchState,
+  type Condition,
+  type Prisma,
+} from "@prisma/client";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
@@ -392,19 +398,58 @@ export async function updateSubscriptionEvents(
   });
 }
 
+type ConditionValues = {
+  note?: string;
+  textPattern?: string;
+  filePath?: string;
+  lineNumber?: string;
+  notifyOnRemoved?: string;
+  notifyOnMoved?: string;
+  notifyOnChanged?: string;
+};
+
 export async function addCondition(
   userId: string,
   subscriptionId: string,
   eventType: EventType,
   conditionType: ConditionType,
-  values: {
-    textPattern?: string;
-    filePath?: string;
-    lineNumber?: string;
-    notifyOnRemoved?: string;
-    notifyOnMoved?: string;
-    notifyOnChanged?: string;
-  },
+  values: ConditionValues,
+): Promise<void> {
+  await saveCondition(userId, subscriptionId, eventType, conditionType, values);
+}
+
+export async function updateCondition(
+  userId: string,
+  subscriptionId: string,
+  conditionId: string,
+  values: ConditionValues,
+): Promise<void> {
+  const condition = await db.condition.findFirst({
+    where: {
+      id: conditionId,
+      subscriptionEvent: { subscriptionId, subscription: { userId } },
+    },
+    include: { subscriptionEvent: true },
+  });
+  if (!condition) throw new Error("Condition not found");
+
+  await saveCondition(
+    userId,
+    subscriptionId,
+    condition.subscriptionEvent.type,
+    condition.type,
+    values,
+    condition,
+  );
+}
+
+async function saveCondition(
+  userId: string,
+  subscriptionId: string,
+  eventType: EventType,
+  conditionType: ConditionType,
+  values: ConditionValues,
+  existing?: Condition,
 ): Promise<void> {
   const subscription = await db.subscription.findFirst({
     where: { id: subscriptionId, userId },
@@ -415,8 +460,23 @@ export async function addCondition(
     (event) => event.type === eventType,
   );
   if (!subscriptionEvent || !subscriptionEvent.enabled) {
-    throw new Error("Enable this event before adding a condition");
+    throw new Error("Enable this event before saving a condition");
   }
+
+  async function persist(data: Prisma.ConditionUncheckedCreateInput) {
+    if (existing) {
+      await db.condition.update({ where: { id: existing.id }, data });
+    } else {
+      await db.condition.create({ data });
+    }
+  }
+
+  const note =
+    z
+      .string()
+      .trim()
+      .max(2000, "Keep the note to 2,000 characters or fewer")
+      .parse(values.note ?? "") || null;
 
   if (conditionType === ConditionType.TEXT_CONTAINS) {
     const textPattern = z
@@ -425,12 +485,11 @@ export async function addCondition(
       .min(1, "Enter text to match")
       .max(500)
       .parse(values.textPattern);
-    await db.condition.create({
-      data: {
-        subscriptionEventId: subscriptionEvent.id,
-        type: conditionType,
-        textPattern,
-      },
+    await persist({
+      subscriptionEventId: subscriptionEvent.id,
+      type: conditionType,
+      textPattern,
+      note,
     });
     return;
   }
@@ -476,44 +535,59 @@ export async function addCondition(
     throw new Error("Select at least one notification trigger");
   }
 
+  const lineData = {
+    subscriptionEventId: subscriptionEvent.id,
+    type: conditionType,
+    filePath: line.filePath,
+    lineNumber: line.lineNumber,
+    note,
+    notifyOnRemoved,
+    notifyOnMoved,
+    notifyOnChanged,
+  };
+  // Notes and trigger changes must not reset the captured line or its progress.
+  if (
+    existing?.filePath === line.filePath &&
+    existing.lineNumber === line.lineNumber
+  ) {
+    await persist(lineData);
+    return;
+  }
+
   await withRepositoryReadToken(
     userId,
     subscription.repository.isPrivate,
     async (token) => {
-    let ref = subscription.repository.defaultBranch;
-    if (eventType === EventType.RELEASE) {
-      const latest = await getLatestRelease(
+      let ref = subscription.repository.defaultBranch;
+      if (eventType === EventType.RELEASE) {
+        const latest = await getLatestRelease(
+          token,
+          subscription.repository.owner,
+          subscription.repository.name,
+        );
+        if (latest) ref = latest.tag_name;
+      }
+      const commit = await getCommit(
         token,
         subscription.repository.owner,
         subscription.repository.name,
+        ref,
       );
-      if (latest) ref = latest.tag_name;
-    }
-    const commit = await getCommit(
-      token,
-      subscription.repository.owner,
-      subscription.repository.name,
-      ref,
-    );
-    const content = await getFileLine(
-      token,
-      subscription.repository.owner,
-      subscription.repository.name,
-      line.filePath,
-      line.lineNumber,
-      commit.sha,
-    );
-    if (content === null) {
-      throw new Error(
-        "That file or line does not exist at the current repository version",
+      const content = await getFileLine(
+        token,
+        subscription.repository.owner,
+        subscription.repository.name,
+        line.filePath,
+        line.lineNumber,
+        commit.sha,
       );
-    }
-    await db.condition.create({
-      data: {
-        subscriptionEventId: subscriptionEvent.id,
-        type: conditionType,
-        filePath: line.filePath,
-        lineNumber: line.lineNumber,
+      if (content === null) {
+        throw new Error(
+          "That file or line does not exist at the current repository version",
+        );
+      }
+      await persist({
+        ...lineData,
         baselineCommitSha: commit.sha,
         baselineLineContent: content,
         lastObservedCommitSha: commit.sha,
@@ -521,12 +595,9 @@ export async function addCondition(
         lastObservedLineState: LineMatchState.EXACT,
         movedLineNumber: line.lineNumber,
         removedLineNumber: line.lineNumber,
-        notifyOnRemoved,
-        notifyOnMoved,
-        notifyOnChanged,
-      },
-    });
-  });
+      });
+    },
+  );
 }
 
 export async function retrySubscription(

@@ -166,6 +166,7 @@ model Condition {
   subscriptionEventId     String
   subscriptionEvent       SubscriptionEvent @relation(fields: [subscriptionEventId], references: [id], onDelete: Cascade)
   type                    ConditionType
+  note                    String?
   textPattern             String?
   filePath                String?
   lineNumber              Int?

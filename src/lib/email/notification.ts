@@ -52,6 +52,7 @@ export type RepositoryNotification = {
   createdAt: Date | string;
   condition: {
     type: NotificationConditionType;
+    note?: string | null;
     textPattern?: string | null;
   };
 };
@@ -548,13 +549,16 @@ export function buildRepositoryNotificationEmail({
     const typeLabel = first.eventType === "RELEASE" ? "Release" : "Commit";
     const textConditions = eventNotifications.map((notification) => {
       const payload = parseNotificationPayload(notification.summary);
+      let content: string;
       if (payload?.condition.kind === "text") {
-        return renderTextConditionText(payload.condition);
+        content = renderTextConditionText(payload.condition);
+      } else if (payload?.condition.kind === "line") {
+        content = renderLineConditionText(payload.condition);
+      } else {
+        content = notification.summary;
       }
-      if (payload?.condition.kind === "line") {
-        return renderLineConditionText(payload.condition);
-      }
-      return notification.summary;
+      const note = notification.condition.note;
+      return note ? `${content}\n\nYour note: ${note}` : content;
     });
     textEvents.push(
       `${typeLabel.toLocaleUpperCase()}: ${heading}\n${first.eventUrl}\n\n${textConditions.join(
@@ -573,7 +577,11 @@ export function buildRepositoryNotificationEmail({
         } else {
           content = `<p style="margin:0">${escapeHtml(notification.summary)}</p>`;
         }
-        return `<div style="margin-top:14px;padding-top:14px;border-top:1px solid #d8dee4">${content}</div>`;
+        const note = notification.condition.note;
+        const noteHtml = note
+          ? `<p style="margin:12px 0 0;white-space:pre-wrap;overflow-wrap:anywhere"><strong>Your note:</strong> ${escapeHtml(note)}</p>`
+          : "";
+        return `<div style="margin-top:14px;padding-top:14px;border-top:1px solid #d8dee4">${content}${noteHtml}</div>`;
       })
       .join("");
     htmlEvents.push(
