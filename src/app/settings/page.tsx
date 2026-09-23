@@ -2,11 +2,12 @@ import { EmailSource } from "@prisma/client";
 
 import { Flash } from "@/app/_components/flash";
 import { Header } from "@/app/_components/header";
+import { GitHubAppConnection } from "@/app/settings/github-app-connection";
 import {
   requireUser,
   userIsAdmin,
 } from "@/lib/auth/session";
-import { googleOAuthConfigured, isProduction } from "@/lib/config";
+import { config, googleOAuthConfigured, isProduction } from "@/lib/config";
 import { db } from "@/lib/db";
 import { hasPrivateRepositoryAccess } from "@/lib/github/access";
 import { GITHUB_DEFAULT_HOURLY_LIMIT } from "@/lib/github/rate-limit";
@@ -248,7 +249,7 @@ export default async function SettingsPage({
                 ) : (
                   <>
                     <p>
-                      Register a GitHub App for authenticated public API
+                      Register or connect a GitHub App for authenticated public API
                       requests. It requests no repository permissions and does
                       not need to be installed on repositories.
                     </p>
@@ -259,6 +260,12 @@ export default async function SettingsPage({
                     </form>
                   </>
                 )}
+                {githubAppEnabled ? (
+                  <GitHubAppConnection
+                    app={githubApp}
+                    callbackUrl={`${config().APP_URL}/api/admin/github-app/authorize/callback`}
+                  />
+                ) : null}
                 {githubAppEnabled ? (
                   <span className="form-hint">
                     Public repositories remain public. The app user token only

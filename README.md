@@ -144,6 +144,13 @@ In production, after signing in as a super-admin, open Settings:
 2. Select **Authorize GitHub App** and authorize it with the same GitHub account
    used for the RepoMonitor super-admin session.
 
+To reuse an existing app, select **Connect existing app**, enter its App ID,
+slug, Client ID, and client secret, then save and authorize it. The form shows
+the callback URL to configure in GitHub. See the
+[existing-app setup steps](docs/github-authentication.md#connect-an-existing-github-app).
+Keep the database volume and `ENCRYPTION_KEY` stable across redeployments to
+retain the connection automatically.
+
 RepoMonitor stores the resulting GitHub App user access and refresh tokens
 encrypted. GitHub Apps acting on behalf of a user have implicit read access to
 public resources, so the app does not need to be installed on or granted access

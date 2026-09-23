@@ -5,7 +5,7 @@ RepoMonitor uses two separate GitHub registrations:
 | Registration | Purpose | Configuration |
 | --- | --- | --- |
 | OAuth App | Sign-in, verified email discovery, and optional private-repository access for each user | Created manually in GitHub Developer settings; credentials are stored in the environment |
-| GitHub App | Shared, authenticated polling of public repositories in production | Created from RepoMonitor's super-admin Settings page; credentials are stored encrypted in the database |
+| GitHub App | Shared, authenticated polling of public repositories in production | Created or connected from RepoMonitor's super-admin Settings page; secrets are stored encrypted in the database |
 
 Do not substitute one registration for the other. They use different callback
 URLs and credentials.
@@ -76,8 +76,9 @@ than repeatedly changing a shared registration.
 
 ## 2. Register the public-polling GitHub App in production
 
-Do not create this GitHub App manually. RepoMonitor uses GitHub's App Manifest
-flow so the generated client ID and secret can be saved automatically.
+For a new GitHub App, RepoMonitor uses GitHub's App Manifest flow so the
+generated client ID and secret can be saved automatically. If you already have
+a public-polling GitHub App, use **Connect existing app** as described below.
 
 The registration and authorization controls are disabled in development.
 GitHub validates the manifest's webhook URL as publicly reachable even when
@@ -112,6 +113,38 @@ No GitHub App ID, client ID, client secret, private key, or webhook secret needs
 to be copied into `.env`. RepoMonitor saves the returned app credentials and
 user tokens encrypted in the database. Keep `ENCRYPTION_KEY` stable after
 registration.
+
+### Connect an existing GitHub App
+
+You do not need to delete or recreate your GitHub App after a fresh deployment.
+
+1. Open **Settings > Public repository polling > Connect existing app** in
+   RepoMonitor while signed in as a super-admin in production.
+2. In GitHub, open **Settings > Developer settings > GitHub Apps** and edit the
+   existing public-polling app. For an organization-owned app, use the
+   organization's settings.
+3. Set its user authorization callback URL to the value shown in RepoMonitor.
+   This uses the current `APP_URL`, ending in
+   `/api/admin/github-app/authorize/callback`.
+4. Enter the app's **App ID**, **slug** (the last part of
+   `https://github.com/apps/SLUG`), **Client ID**, and **client secret** in
+   RepoMonitor. Generate a new client secret in GitHub if you no longer have the
+   original. Use the GitHub App credentials, not the separate sign-in OAuth App
+   credentials. No private key is needed.
+5. Select **Save app credentials**, then **Authorize GitHub App**. Authorization
+   verifies the credentials with GitHub; saving alone does not enable polling.
+   Use the same GitHub account as the active RepoMonitor super-admin session.
+
+The form remains available so you can correct credentials or connect a
+different app. Saving replaces the stored connection and clears its previous
+authorization; public polling resumes after authorization succeeds. Existing
+apps should use the permissions and settings listed below.
+
+For normal redeployments, retain the database volume and the same
+`ENCRYPTION_KEY`. RepoMonitor then remembers the existing app and its encrypted
+tokens without reconnecting. If **Register GitHub App** reappears in production,
+the active database has no saved app configuration; check that the deployment
+is using the original database volume.
 
 ### Expected GitHub App settings
 

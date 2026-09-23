@@ -1430,6 +1430,10 @@ label > small {
   margin-block: 12px;
 }
 
+.github-app-connection {
+  margin-top: 12px;
+}
+
 .connected-sender {
   display: flex;
   align-items: center;

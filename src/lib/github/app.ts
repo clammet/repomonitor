@@ -1,5 +1,7 @@
 import "server-only";
 
+import { z } from "zod";
+
 import { config, isProduction } from "@/lib/config";
 import { decryptSecret, encryptSecret } from "@/lib/crypto";
 import { db } from "@/lib/db";
@@ -71,6 +73,31 @@ export function githubAppManifest() {
   return createGitHubAppManifest(config().APP_URL);
 }
 
+const existingAppSchema = z.object({
+  appId: z.string().trim().regex(/^[1-9]\d*$/).max(20),
+  slug: z.string().trim().regex(/^[a-z0-9_-]+$/i).max(100),
+  clientId: z.string().trim().regex(/^[a-z0-9_.-]+$/i).max(255),
+  clientSecret: z.string().trim().min(1).max(512).regex(/^\S+$/),
+});
+
+export async function connectExistingGitHubApp(
+  credentials: unknown,
+  configuredByUserId: string,
+) {
+  if (!isProduction()) {
+    throw new GitHubAppConfigurationError(
+      "GitHub App connection is disabled in development.",
+    );
+  }
+  const parsed = existingAppSchema.safeParse(credentials);
+  if (!parsed.success) {
+    throw new GitHubAppConfigurationError(
+      "Enter a numeric App ID, an app slug (not a URL), a Client ID, and a client secret from your GitHub App settings.",
+    );
+  }
+  return saveGitHubAppConfiguration(parsed.data, configuredByUserId);
+}
+
 export async function registerGitHubAppFromManifest(
   code: string,
   configuredByUserId: string,
@@ -107,14 +134,33 @@ export async function registerGitHubAppFromManifest(
     );
   }
 
+  return saveGitHubAppConfiguration(
+    {
+      appId: String(body.id),
+      slug: body.slug,
+      clientId: body.client_id,
+      clientSecret: body.client_secret,
+    },
+    configuredByUserId,
+  );
+}
+
+async function saveGitHubAppConfiguration(
+  credentials: z.infer<typeof existingAppSchema>,
+  configuredByUserId: string,
+) {
+  const configuration = {
+    appId: credentials.appId,
+    slug: credentials.slug,
+    clientId: credentials.clientId,
+    clientSecretEncrypted: encryptSecret(credentials.clientSecret),
+    configuredByUserId,
+  };
   cachedPublicToken = undefined;
   return db.gitHubAppConfiguration.upsert({
     where: { id: "global" },
     update: {
-      appId: String(body.id),
-      slug: body.slug,
-      clientId: body.client_id,
-      clientSecretEncrypted: encryptSecret(body.client_secret),
+      ...configuration,
       accessTokenEncrypted: null,
       accessTokenExpiresAt: null,
       refreshTokenEncrypted: null,
@@ -122,15 +168,10 @@ export async function registerGitHubAppFromManifest(
       authorizedByUserId: null,
       authorizedGithubLogin: null,
       authorizedAt: null,
-      configuredByUserId,
     },
     create: {
       id: "global",
-      appId: String(body.id),
-      slug: body.slug,
-      clientId: body.client_id,
-      clientSecretEncrypted: encryptSecret(body.client_secret),
-      configuredByUserId,
+      ...configuration,
     },
   });
 }
