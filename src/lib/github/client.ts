@@ -84,6 +84,8 @@ export async function githubFetch<T>(
       errorBody,
       response.headers.get("retry-after"),
       response.headers.get("x-ratelimit-remaining"),
+      path.split("?")[0],
+      response.headers.get("x-github-request-id"),
     );
   }
   return (await response.json()) as T;

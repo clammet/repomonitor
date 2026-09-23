@@ -5,6 +5,8 @@ export class GitHubApiError extends Error {
     readonly responseBody: string,
     readonly retryAfter: string | null = null,
     readonly rateLimitRemaining: string | null = null,
+    readonly requestPath: string | null = null,
+    readonly requestId: string | null = null,
   ) {
     super(message);
     this.name = "GitHubApiError";

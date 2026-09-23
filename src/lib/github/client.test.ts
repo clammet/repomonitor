@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import {
+  GitHubApiError,
   getCommit,
   githubFetch,
   listCommitsBetween,
@@ -39,6 +40,22 @@ afterEach(() => {
 });
 
 describe("GitHub request authentication", () => {
+  it("retains the failed endpoint and GitHub request ID without query values", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(
+      JSON.stringify({ message: "Bad credentials" }),
+      { status: 401, headers: { "x-github-request-id": "request-123" } },
+    )));
+
+    const failure = await githubFetch("secret-token", "/repos/o/r?ref=private-value")
+      .catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(GitHubApiError);
+    expect(failure).toMatchObject({
+      status: 401, requestPath: "/repos/o/r", requestId: "request-123",
+    });
+    expect(JSON.stringify(failure)).not.toContain("secret-token");
+    expect(JSON.stringify(failure)).not.toContain("private-value");
+  });
+
   it("omits authorization for anonymous public polling", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), {

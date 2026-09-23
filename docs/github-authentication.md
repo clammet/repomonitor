@@ -230,6 +230,26 @@ Registration and authorization are separate steps. Return to RepoMonitor
 **Settings** and select **Authorize GitHub App**. Use the same GitHub account
 that is signed in to RepoMonitor.
 
+### A repository request reports rejected or revoked authorization
+
+A GitHub `401` means the request was rejected; it does not by itself prove that
+the app registration needs to be replaced. RepoMonitor reloads the current
+authorization, attempts a token refresh when available, and retries the
+operation once. If GitHub still rejects it, RepoMonitor checks the token with
+`GET /user` before clearing that authorization. A late failure from an older
+request cannot clear a newer authorization.
+
+If the token cannot be recovered, select **Authorize GitHub App** or
+**Reauthorize** in Settings for the current app. Do not recreate the app. Older
+versions cleared the saved authorization on the first `401`, so after upgrading
+you may need to authorize it once more.
+
+If the error persists immediately after authorization, check the server log
+entry **Public repository request rejected by GitHub**. It contains the failed
+endpoint, HTTP status, and GitHub request ID, without credentials or tokens.
+These distinguish the failed repository request from the successful sign-in
+check and can help investigate the rejection with GitHub.
+
 ### A private organization repository is unavailable
 
 The user must select private-repository access in RepoMonitor. The organization
