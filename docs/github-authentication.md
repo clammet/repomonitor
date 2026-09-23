@@ -140,6 +140,13 @@ different app. Saving replaces the stored connection and clears its previous
 authorization; public polling resumes after authorization succeeds. Existing
 apps should use the permissions and settings listed below.
 
+To abandon the existing-app setup, select **Create new GitHub App** in the same
+section. This starts the new-app registration flow even when credentials are
+already saved. Completing registration replaces the saved credentials and
+clears the previous authorization; then select **Authorize GitHub App** to
+authorize the newly created app. Cancelling registration leaves the saved
+connection intact. RepoMonitor does not delete the previous app from GitHub.
+
 For normal redeployments, retain the database volume and the same
 `ENCRYPTION_KEY`. RepoMonitor then remembers the existing app and its encrypted
 tokens without reconnecting. If **Register GitHub App** reappears in production,

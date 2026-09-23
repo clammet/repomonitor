@@ -234,9 +234,9 @@ export default async function SettingsPage({
                   ) : (
                     <>
                       <p>
-                        The GitHub App is registered. Authorize it as this
-                        super-admin to give public polling an authenticated API
-                        rate limit.
+                        Credentials are saved for <strong>{githubApp.slug}</strong>.
+                        Authorize this app as the signed-in super-admin to enable
+                        authenticated public polling.
                       </p>
                       <a
                         className="button button-primary button-small"
@@ -253,18 +253,28 @@ export default async function SettingsPage({
                       requests. It requests no repository permissions and does
                       not need to be installed on repositories.
                     </p>
-                    <form action="/api/admin/github-app/register" method="post">
-                      <button className="button button-primary button-small">
-                        Register GitHub App
-                      </button>
-                    </form>
                   </>
                 )}
                 {githubAppEnabled ? (
-                  <GitHubAppConnection
-                    app={githubApp}
-                    callbackUrl={`${config().APP_URL}/api/admin/github-app/authorize/callback`}
-                  />
+                  <>
+                    {githubApp ? (
+                      <p>
+                        To start over, create a new GitHub App. Completing
+                        registration replaces the saved connection.
+                      </p>
+                    ) : null}
+                    <form action="/api/admin/github-app/register" method="post">
+                      <button
+                        className={`button ${githubApp ? "button-secondary" : "button-primary"} button-small`}
+                      >
+                        {githubApp ? "Create new GitHub App" : "Register GitHub App"}
+                      </button>
+                    </form>
+                    <GitHubAppConnection
+                      app={githubApp}
+                      callbackUrl={`${config().APP_URL}/api/admin/github-app/authorize/callback`}
+                    />
+                  </>
                 ) : null}
                 {githubAppEnabled ? (
                   <span className="form-hint">
