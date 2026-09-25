@@ -7,11 +7,16 @@
   ],
   "rangeStrategy": "pin",
   "minimumReleaseAge": "3 days",
-  "platformAutomerge": false,
+  "platformAutomerge": true,
+  "internalChecksFilter": "strict",
+  "statusCheckWhen": {
+    "artifactError": "always"
+  },
   "prHourlyLimit": 0,
   "prConcurrentLimit": 10,
   "osvVulnerabilityAlerts": true,
   "lockFileMaintenance": {
+    "minimumReleaseAge": null,
     "enabled": true,
     "automerge": true,
     "schedule": [
@@ -21,6 +26,12 @@
   },
   "dependencyDashboard": true,
   "packageRules": [
+    {
+      "description": "The better-sqlite3 build permission must follow Prisma's installed transitive version; do not upgrade the permission independently",
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": ["better-sqlite3"],
+      "enabled": false
+    },
     {
       "description": "Automerge non-major updates once CI is green; rebase onto main first so CI ran against the current base",
       "matchUpdateTypes": [
