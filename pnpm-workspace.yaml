@@ -22,7 +22,7 @@ overrides:
   "next@16.4.2>sharp": "0.35.5"
 
 # Give registries and security tooling time to identify malicious releases.
-minimumReleaseAge: 1440
+minimumReleaseAge: 4320
 minimumReleaseAgeStrict: true
 minimumReleaseAgeIgnoreMissingTime: false
 
