@@ -29,7 +29,7 @@ jobs:
           persist-credentials: false
       - name: Verify the current revision and its CI
         id: gate
-        uses: yuzuyuzuyu/repo-automation/actions/publication@5586e5ba4cf9c824b8ec9b264f8b67cc29403b30 # v1.0.17
+        uses: yuzuyuzuyu/repo-automation/actions/publication@5cc9087ea08575374c515afb0120292b9904a466 # v1.0.19
 
   docker:
     if: needs.publication-ready.outputs.ready == 'true'
