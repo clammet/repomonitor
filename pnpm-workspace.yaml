@@ -29,10 +29,10 @@ minimumReleaseAgeIgnoreMissingTime: false
 # Reject packages whose publishing provenance regresses, and stop transitive
 # dependencies from fetching executable code from arbitrary Git or tarball URLs.
 trustPolicy: no-downgrade
-# Prisma intentionally switched this CLI release to its bot token (upstream #30035).
-# https://github.com/prisma/orm/pull/30035 — review future releases separately.
+# Prisma intentionally token-publishes this CLI without provenance (upstream #30035).
+# https://github.com/prisma/orm/issues/30850 — review future releases separately.
 trustPolicyExclude:
-  - prisma@7.10.0
+  - prisma@7.10.1
 trustPolicyIgnoreAfter: 43200
 trustLockfile: false
 blockExoticSubdeps: true
