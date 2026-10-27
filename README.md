@@ -298,6 +298,12 @@ by digest. A self-hosted Renovate run opens a PR for each upstream release, CI
 proves it, and green minor or patch PRs merge themselves while majors wait for
 review. Trivy scans the published image weekly.
 
+`packageManager` retains the pnpm checksum. The matching plain version in
+`devEngines.packageManager` lets Renovate install pnpm without treating the
+checksum as part of a filesystem path. Shared policy groups both fields in
+one update. `onFail: ignore` permits npm-based bootstrap commands; Corepack
+continues to enforce the checksum pin.
+
 Renovate authenticates as a GitHub App; the secret setup is documented in
 `.github/workflows/renovate.yml`. Merging relies on repository settings:
 auto-merge is enabled and a ruleset on the default branch requires the
