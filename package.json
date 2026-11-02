@@ -29,7 +29,7 @@
     "@prisma/adapter-better-sqlite3": "7.10.1",
     "@prisma/client": "7.10.1",
     "dotenv": "18.0.9",
-    "jose": "6.2.13",
+    "jose": "6.2.14",
     "next": "16.4.3",
     "node-cron": "4.6.0",
     "prisma": "7.10.1",
