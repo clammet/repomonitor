@@ -22,4 +22,4 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-    - uses: yuzuyuzuyu/repo-automation/actions/watchdog@7dfff82b9b849b90ea19eac1f6efdd595b73544f # v1.0.32
+    - uses: yuzuyuzuyu/repo-automation/actions/watchdog@b2cc851a2b24582f8b04216a20fe30514c54a0ef # v1.0.33
